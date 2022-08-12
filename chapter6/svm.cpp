@@ -1,11 +1,15 @@
 #include "svm.h"
 #include <iostream>
+#include <memory>
+#include <string>
 #include <ctime>
 #include <random>
 #include <algorithm>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+using std::shared_ptr;
+using std::string;
 using Eigen::VectorXf;
 using Eigen::MatrixXf;
 using Eigen::RowVectorXf;
@@ -30,15 +34,41 @@ int select_j(int i, int m) {
     return res;
 }
 
-void SVM::update_w(const VectorXf &alphas, const MatrixXf &dataset, const VectorXf &labels) {
-    int m = dataset.rows(), n = dataset.cols();
-    VectorXf ay(m);
-    for(int i=0; i<m; ++i) {
-        ay(i) = alphas(i, 0) * labels(i, 0);
+SVM::SVM(float _c, const string &_kernel, float params[2]) : b(0), C(_c) {
+    if(_kernel == "linear") {
+        std::cout << "Using linear kernel" << std::endl;
+        kernel = std::make_shared<LinearKernel>();
+    } else if(_kernel == "poly") {
+        std::cout << "Using polynomial kernel" << std::endl;
+        int d = (int)params[0];
+        kernel = std::make_shared<PolyKernel>();
+    } else if(_kernel == "rbf") {
+        std::cout << "Using gaussian(rbf) kernel" << std::endl;
+        float sigma = params[0];
+        kernel = std::make_shared<RBFKernel>(sigma);
+    } else if(_kernel == "laplace") {
+        std::cout << "Using laplace kernel" << std::endl;
+        float sigma = params[0];
+        kernel = std::make_shared<LaplaceKernel>();
+    } else if(_kernel == "sigmoid") {
+        std::cout << "Using sigmoid kernel" << std::endl;
+        float beta = params[0], theta = params[1];
+        kernel = std::make_shared<SigmoidKernel>(beta, theta);
+    } else {
+        std::cout << "Using linear kernel" << std::endl;
+        kernel = std::make_shared<LinearKernel>();
     }
-    w = dataset.transpose() * ay;
-    std::cout << "w:\n" << w.transpose() << std::endl;
 }
+
+// void SVM::update_w(const VectorXf &alphas, const MatrixXf &dataset, const VectorXf &labels) {
+//     int m = dataset.rows(), n = dataset.cols();
+//     VectorXf ay(m);
+//     for(int i=0; i<m; ++i) {
+//         ay(i) = alphas(i, 0) * labels(i, 0);
+//     }
+//     w = dataset.transpose() * ay;
+//     std::cout << "w:\n" << w.transpose() << std::endl;
+// }
 
 void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
     /*  
@@ -51,9 +81,7 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
 
     /* 1. 初始化变量 */
     int m = dataset.rows(), n = dataset.cols();
-    VectorXf alphas = VectorXf::Zero(m);
-    update_w(alphas, dataset, labels);
-    b = 0;
+    alphas = VectorXf::Zero(m);
     VectorXf x_i, x_j;
     float a_i, b_i, y_i, fx_i, E_i;
     float a_j, b_j, y_j, fx_j, E_j;
@@ -70,19 +98,19 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
             a_i = alphas(i, 0);
             x_i = dataset.row(i);
             y_i = labels(i,0);
-            fx_i = predict(x_i);
+            fx_i = _predict(dataset, labels, x_i);
             E_i = fx_i - y_i;
 
             j = select_j(i, m);
             a_j = alphas(j, 0);
             x_j = dataset.row(j);
             y_j = labels(j, 0);
-            fx_j = predict(x_j);
+            fx_j = _predict(dataset, labels, x_j);
             E_j = fx_j - y_j;
 
-            K_ii = x_i.transpose() * x_i;
-            K_jj = x_j.transpose() * x_j;
-            K_ij = x_i.transpose() * x_j;
+            K_ii = (*kernel)(x_i, x_i);
+            K_jj = (*kernel)(x_j, x_j);
+            K_ij = (*kernel)(x_i, x_j);
 
             eta = K_ii + K_jj - 2 * K_ij;
             if(eta <= 0) {
@@ -110,8 +138,7 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
             alphas(i, 0) = a_i_new;
             alphas(j, 0) = a_j_new;
 
-            // 更新阈值w, b
-            update_w(alphas, dataset, labels);
+            // 更新阈值b
             b_i = -E_i - y_i*K_ii*(a_i_new - a_i_old) - y_j*K_ij*(a_j_new - a_j_old) + b;
             b_j = -E_j - y_i*K_ij*(a_i_new - a_i_old) - y_j*K_jj*(a_j_new - a_j_old) + b;
             if(a_i_new > 0 && a_i_new < C) {
@@ -122,22 +149,54 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
                 b = (b_i + b_j) / 2;
             }
             pair_changed += 1;
-            printf("INFO   iteration:%d  i:%d  pair_changed:%d\n", iter, i, pair_changed);
+            // printf("INFO   iteration:%d  i:%d  pair_changed:%d\n", iter, i, pair_changed);
         }
         if(pair_changed == 0) {
             ++iter;
         } else {
             iter = 0;
         }
-        printf("iteration number: %d\n", iter);
+        // printf("iteration number: %d\n", iter);
     }
     std::cout << "alphas: " << alphas.transpose() << std::endl;
+
+    /* 3. 保存支持向量 */
+    for(int i=0; i<m; ++i) {
+        if(abs(alphas(i)) > 0.001) {
+            support_vec.emplace_back(alphas(i) * labels(i), dataset.row(i));
+        }
+    }
 }
 
-float SVM::predict(const VectorXf &x) {
-    return (w.transpose() * x)(0, 0) + b;
+float SVM::_predict(const MatrixXf &dataset, const VectorXf &labels, const VectorXf &x) {
+    int m = dataset.rows(), n = dataset.cols();
+    VectorXf K(m), ay(m);
+    for(int i=0; i<m; ++i) {
+        K(i) = (*kernel)(dataset.row(i), x);
+        ay(i) = alphas(i) * labels(i);
+    }
+    return (ay.transpose() * K) + b;
 }
 
 VectorXf SVM::predict(const MatrixXf &X) {
-    return (X * w).array() + b;
+    int m = support_vec.size(), n = X.rows();
+    MatrixXf K(m, n);
+    VectorXf ay(m);
+    for(int i=0; i<m; ++i) {
+        ay(i) = support_vec[i].first;
+        for(int j=0; j<n; ++j) {
+            K(i, j) = (*kernel)(support_vec[i].second, X.row(j));
+        }
+    }
+    return (ay.transpose() * K).array() + b;
+}
+
+float SVM::predict(const VectorXf &x) {
+    int m = support_vec.size();
+    VectorXf K(m), ay(m);
+    for(int i=0; i<m; ++i) {
+        ay(i) = support_vec[i].first;
+        K(i) = (*kernel)(support_vec[i].second, x);
+    }
+    return (ay.transpose() * K) + b;
 }

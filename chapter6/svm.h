@@ -1,5 +1,13 @@
+#include <memory>
+#include <string>
+#include <vector>
 #include <Eigen/Core>
+#include "kernel.h"
 
+using std::vector;
+using std::pair;
+using std::shared_ptr;
+using std::string;
 using Eigen::VectorXf;
 using Eigen::MatrixXf;
 
@@ -9,17 +17,20 @@ int select_j(int, int);
 
 class SVM {
 private:
-    VectorXf w;
+    VectorXf alphas;
+    vector<pair<float, VectorXf>> support_vec;
     float b;
     float C;
-    void update_w(const VectorXf&, const MatrixXf&, const VectorXf&);
+    shared_ptr<BaseKernel> kernel;
+    float _predict(const MatrixXf&, const VectorXf&, const VectorXf&);
 public:
-    SVM(float _c) : C(_c) {}
+    SVM() : C(1.0), kernel(std::make_shared<LinearKernel>()) {}
+    SVM(float _c, const string &_kernel, float params[2]);
     void solve(const MatrixXf&, const VectorXf&, int);
     float predict(const VectorXf&);
     VectorXf predict(const MatrixXf &);
-    inline VectorXf get_w() { return w; }
-    inline float get_b() { return b; }
+    inline VectorXf get_alphas() const { return alphas; }
+    inline float get_b() const { return b; }
 };
 
 

@@ -17,13 +17,24 @@ using Eigen::VectorXf;
 
 
 int main(int argc, char* argv[]) {
-    float C = 2.0;
-    if(argc >= 2) {
-        C = std::stof(argv[1]);
+    string file_path, kernel_name;
+    float params[2] = {2.0, 0.0};
+    if(argc >= 4) {
+        file_path = argv[1];
+        kernel_name = argv[2];
+        int i = 0;
+        while(i + 3 < argc) {
+            params[i] = atof(argv[i+3]);
+            ++i;
+        }
+    } else {
+        std::cout << "Usage: $(program_name) $(file_path) $(kernel_name)" << std::endl;
+        return 0;
     }
+
     MatrixXf X;
     VectorXf y;
-    read_csv2matrix("../watermelon.csv", X, y);
+    read_csv2matrix(file_path, X, y);
     int m = X.rows();
     int d = X.cols();
     for(int i=0; i<m; ++i) {
@@ -34,9 +45,9 @@ int main(int argc, char* argv[]) {
     std::cout << "y: " << y.transpose() << std::endl;
 
     MatrixXf X_data = X.block(0, 0, m, d-1);
-    SVM svm(20.0);
+    SVM svm(2.0, kernel_name, params);
     svm.solve(X_data, y, 40);
-    std::cout << "w: " << svm.get_w().transpose() << std::endl;
+    std::cout << "alphas: " << svm.get_alphas().transpose() << std::endl;
     VectorXf pred = svm.predict(X_data);
     for(int i=0; i<m; ++i) {
         if(pred(i,0) >= 0.0) {

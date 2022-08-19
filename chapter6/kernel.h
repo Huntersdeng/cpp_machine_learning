@@ -8,6 +8,7 @@ public:
     BaseKernel() {}
     virtual float operator() (const VectorXf &x1, const VectorXf& x2) = 0;
     virtual VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) = 0;
+    virtual ~BaseKernel() { }
 };
 
 class LinearKernel: public BaseKernel {

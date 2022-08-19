@@ -10,23 +10,39 @@ VectorXf LinearKernel::operator() (const MatrixXf &x1, const VectorXf& x2) {
     return x1 * x2;
 }
 
-/* TODO: */
 VectorXf PolyKernel::operator() (const MatrixXf &x1, const VectorXf& x2) {
-    return x1 * x2;
+    return (x1 * x2).array().pow(d);
 }
 
 VectorXf RBFKernel::operator() (const MatrixXf &x1, const VectorXf& x2) {
-    return x1 * x2;
+    int m = x1.rows();
+    VectorXf res(m);
+    for(int i=0; i<m; ++i) {
+        VectorXf x = x1.row(i);
+        res(i) = (*this)(x, x2);
+    }
+    return res;
 }
 
 VectorXf LaplaceKernel::operator() (const MatrixXf &x1, const VectorXf& x2) {
-    return x1 * x2;
+    int m = x1.rows();
+    VectorXf res(m);
+    for(int i=0; i<m; ++i) {
+        VectorXf x = x1.row(i);
+        res(i) = (*this)(x, x2);
+    }
+    return res;
 }
 
 VectorXf SigmoidKernel::operator() (const MatrixXf &x1, const VectorXf& x2) {
-    return x1 * x2;
+    int m = x1.rows();
+    VectorXf res(m);
+    for(int i=0; i<m; ++i) {
+        VectorXf x = x1.row(i);
+        res(i) = (*this)(x, x2);
+    }
+    return res;
 }
-/* */
 
 float RBFKernel::operator() (const VectorXf &x1, const VectorXf& x2) {
     float squared_norm = (x1 - x2).squaredNorm();

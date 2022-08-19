@@ -73,3 +73,38 @@ float Metric::f_beta_score(const VectorXf &pred, const VectorXf &label, float be
     float b = (TP + FP + beta * beta * (TP + FN));
     return a / b;
 }
+
+float Metric::jaccard_coefficient(const VectorXf &pred, const VectorXf &label) {
+    int a=0, b=0, c=0, d=0;
+    int m = label.rows();
+    for(int i=0; i<m; ++i) {
+        for(int j=i+1; j<m; ++j) {
+            if(pred(i) == pred(j)) {
+                if(label(i) == label(j)) ++a;
+                else                     ++b;
+            } else {
+                if(label(i) == label(j)) ++c;
+                else                     ++d;
+            }
+        }
+    }
+    return a / (float)(a+b+c);
+}
+
+float Metric::fmi(const VectorXf &pred, const VectorXf &label) {
+    int a=0, b=0, c=0, d=0;
+    int m = label.rows();
+    for(int i=0; i<m; ++i) {
+        for(int j=i+1; j<m; ++j) {
+            if(pred(i) == pred(j)) {
+                if(label(i) == label(j)) ++a;
+                else                     ++b;
+            } else {
+                if(label(i) == label(j)) ++c;
+                else                     ++d;
+            }
+        }
+    }
+    float index = a * a / (float)(a+b) / (float)(a+c);
+    return sqrt(index);
+}

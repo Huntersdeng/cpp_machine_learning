@@ -14,4 +14,6 @@ public:
     static float recall(const VectorXf &pred, const VectorXf &label);
     static float f1_score(const VectorXf &pred, const VectorXf &label);
     static float f_beta_score(const VectorXf &pred, const VectorXf &label, float beta);
+    static float jaccard_coefficient(const VectorXf &pred, const VectorXf &label);
+    static float fmi(const VectorXf &pred, const VectorXf &label);
 };

@@ -26,12 +26,14 @@ int main(int argc, char* argv[]) {
 
     MatrixXf X_train, X_test;
     VectorXf y_train, y_test;
-    // read_csv2matrix("./watermelon.csv", X, y);
-    vector<int> idx_train, idx_test;
-    read_Mnist_Label("../dataset/mnist/train-labels.idx1-ubyte", y_train, 0, 1, idx_train);
-    read_Mnist_Label("../dataset/mnist/t10k-labels.idx1-ubyte", y_test, 0, 1, idx_test);
-    read_Mnist_Images("../dataset/mnist/train-images.idx3-ubyte", X_train, idx_train);
-    read_Mnist_Images("../dataset/mnist/t10k-images.idx3-ubyte", X_test, idx_test);
+    read_csv2matrix("./dataset/watermelon.csv", X_train, y_train);
+    X_test = X_train;
+    y_test = y_train;
+    // vector<int> idx_train, idx_test;
+    // read_Mnist_Label("../dataset/mnist/train-labels.idx1-ubyte", y_train, 0, 1, idx_train);
+    // read_Mnist_Label("../dataset/mnist/t10k-labels.idx1-ubyte", y_test, 0, 1, idx_test);
+    // read_Mnist_Images("../dataset/mnist/train-images.idx3-ubyte", X_train, idx_train);
+    // read_Mnist_Images("../dataset/mnist/t10k-images.idx3-ubyte", X_test, idx_test);
     int m = X_train.rows();
     int m_test = X_test.rows();
     int d = X_train.cols();
@@ -63,8 +65,8 @@ int main(int argc, char* argv[]) {
     /* Result */
     Matrix2i mat;
     Metric::confusion_matrix(pred, y_test, mat);
-    // std::cout << "labels:      " << y_test.transpose() << std::endl;
-    // std::cout << "Predictions: " << pred.transpose() << std::endl;
+    std::cout << "labels:      " << y_test.transpose() << std::endl;
+    std::cout << "Predictions: " << pred.transpose() << std::endl;
     std::cout << "MSE: " << Metric::mse(pred, y_test) << std::endl;
     std::cout << "Accuracy: " << Metric::accuracy(pred, y_test) << std::endl;
     std::cout << "Error_rate: " << Metric::error_rate(pred, y_test) << std::endl;

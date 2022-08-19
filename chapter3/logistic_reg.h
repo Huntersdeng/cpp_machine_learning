@@ -34,7 +34,7 @@ private:
 void LogisticReg::init(int d, float mean, float var) {
     static std::default_random_engine e(time(0));
     static std::normal_distribution<float> n(mean, var);
-    w = VectorXf::Zero(d, 1);
+    w = VectorXf::Zero(d+1, 1);
     // std::cout << "w:\n" << w.transpose() << std::endl;
     w.unaryExpr([](double dummy){return n(e);});
     // std::cout << "w:\n" << w.transpose() << std::endl;
@@ -75,7 +75,7 @@ void LogisticReg::solve(MatrixXf &X, VectorXf &y, int step=1000, float eps=1e-4)
     MatrixXf second_derv;
     for(int i=0; i<step; ++i) {
         first_derivative(X, y, first_derv);
-        second_derivative(X, y, second_derv);
+        // second_derivative(X, y, second_derv);
         // std::cout << first_derv.array().abs().sum() << std::endl;
         if(first_derv.array().abs().sum() < eps) {
             std::cout << i << std::endl;
@@ -83,7 +83,7 @@ void LogisticReg::solve(MatrixXf &X, VectorXf &y, int step=1000, float eps=1e-4)
         }
         // std::cout << "first_derv:\n" << first_derv << std::endl;
         // std::cout << "second_derv:\n" << second_derv << std::endl;
-        Newton::step(w, first_derv, second_derv);
+        GradDesc::step(w, first_derv);
     }
 }
 

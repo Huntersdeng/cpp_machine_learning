@@ -7,6 +7,7 @@ class BaseKernel {
 public:
     BaseKernel() {}
     virtual float operator() (const VectorXf &x1, const VectorXf& x2) = 0;
+    virtual VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) = 0;
 };
 
 class LinearKernel: public BaseKernel {
@@ -14,6 +15,7 @@ public:
     inline float operator() (const VectorXf &x1, const VectorXf& x2) override{
         return x1.transpose() * x2;
     }
+    VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
 };
 
 class PolyKernel: public BaseKernel {
@@ -23,6 +25,7 @@ public:
     inline float operator() (const VectorXf &x1, const VectorXf& x2) override{
         return pow(x1.transpose() * x2, d);
     }
+    VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
 private:
     int d;
 };
@@ -32,6 +35,7 @@ public:
     RBFKernel() : sigma(1.0) {}
     RBFKernel(float _sigma) : sigma(_sigma) {}
     float operator() (const VectorXf &x1, const VectorXf& x2) override;
+    VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
 private:
     float sigma;
 };
@@ -41,6 +45,7 @@ public:
     LaplaceKernel() : sigma(1.0) {}
     LaplaceKernel(float _sigma) : sigma(_sigma) { assert(_sigma > 0); }
     float operator() (const VectorXf &x1, const VectorXf& x2) override;
+    VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
 private:
     float sigma;
 };
@@ -53,6 +58,7 @@ public:
         assert(_theta < 0);
     }
     float operator() (const VectorXf &x1, const VectorXf& x2) override;
+    VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
 private:
     float beta;
     float theta;

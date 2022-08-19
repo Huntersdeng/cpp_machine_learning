@@ -81,7 +81,7 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
 
     /* 1. 初始化变量 */
     int m = dataset.rows(), n = dataset.cols();
-    alphas = VectorXf::Zero(m);
+    alphas = VectorXf::Ones(m);
     VectorXf x_i, x_j;
     float a_i, b_i, y_i, fx_i, E_i;
     float a_j, b_j, y_j, fx_j, E_j;
@@ -149,14 +149,14 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
                 b = (b_i + b_j) / 2;
             }
             pair_changed += 1;
-            // printf("INFO   iteration:%d  i:%d  pair_changed:%d\n", iter, i, pair_changed);
+            printf("INFO   iteration:%d  i:%d  pair_changed:%d\n", iter, i, pair_changed);
         }
         if(pair_changed == 0) {
             ++iter;
         } else {
             iter = 0;
         }
-        // printf("iteration number: %d\n", iter);
+        printf("iteration number: %d\n", iter);
     }
     std::cout << "alphas: " << alphas.transpose() << std::endl;
 
@@ -170,11 +170,13 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
 
 float SVM::_predict(const MatrixXf &dataset, const VectorXf &labels, const VectorXf &x) {
     int m = dataset.rows(), n = dataset.cols();
-    VectorXf K(m), ay(m);
-    for(int i=0; i<m; ++i) {
-        K(i) = (*kernel)(dataset.row(i), x);
-        ay(i) = alphas(i) * labels(i);
-    }
+    // VectorXf K(m), ay(m);
+    // for(int i=0; i<m; ++i) {
+    //     K(i) = (*kernel)(dataset.row(i), x);
+    //     ay(i) = alphas(i) * labels(i);
+    // }
+    VectorXf K = (*kernel)(dataset, x);
+    VectorXf ay = alphas.array() * labels.array();
     return (ay.transpose() * K) + b;
 }
 

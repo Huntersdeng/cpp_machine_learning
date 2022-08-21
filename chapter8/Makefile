@@ -5,7 +5,7 @@ test: metric.o test.o
 metric.o : 
 	g++ -c ../chapter2/metric.cpp
 
-test.o :
+test.o : lvq.h kmeans.h test.cpp
 	g++ -c test.cpp
 
 clean: 

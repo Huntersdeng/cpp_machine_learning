@@ -9,6 +9,7 @@
 #include "../utils/dataset.h"
 #include "../chapter2/metric.h"
 #include "kmeans.h"
+#include "lvq.h"
 
 using std::vector;
 using Eigen::MatrixXf;
@@ -36,8 +37,14 @@ int main(int argc, char* argv[]) {
         y(i, 0) = y_data[i];
     } 
 
-    KMeans km(2);
-    km.solve(X, pred);
+    /* 1. KMeans */
+    // KMeans km(2);
+    // km.solve(X, pred);
+
+    /* 2. LVQ */
+    LVQ lvq;
+    lvq.solve(X, y, 0.01, 10000);
+    pred = lvq.predict(X);
 
     /* Result */
     Matrix2i mat;

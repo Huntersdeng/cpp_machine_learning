@@ -34,32 +34,6 @@ int select_j(int i, int m) {
     return res;
 }
 
-SVM::SVM(float _c, const string &_kernel, float params[2]) : b(0), C(_c) {
-    if(_kernel == "linear") {
-        std::cout << "Using linear kernel" << std::endl;
-        kernel = std::make_shared<LinearKernel>();
-    } else if(_kernel == "poly") {
-        std::cout << "Using polynomial kernel" << std::endl;
-        int d = (int)params[0];
-        kernel = std::make_shared<PolyKernel>();
-    } else if(_kernel == "rbf") {
-        std::cout << "Using gaussian(rbf) kernel" << std::endl;
-        float sigma = params[0];
-        kernel = std::make_shared<RBFKernel>(sigma);
-    } else if(_kernel == "laplace") {
-        std::cout << "Using laplace kernel" << std::endl;
-        float sigma = params[0];
-        kernel = std::make_shared<LaplaceKernel>();
-    } else if(_kernel == "sigmoid") {
-        std::cout << "Using sigmoid kernel" << std::endl;
-        float beta = params[0], theta = params[1];
-        kernel = std::make_shared<SigmoidKernel>(beta, theta);
-    } else {
-        std::cout << "Using linear kernel" << std::endl;
-        kernel = std::make_shared<LinearKernel>();
-    }
-}
-
 // void SVM::update_w(const VectorXf &alphas, const MatrixXf &dataset, const VectorXf &labels) {
 //     int m = dataset.rows(), n = dataset.cols();
 //     VectorXf ay(m);

@@ -2,7 +2,7 @@ test : kernel.o svm.o metric.o test.o
 	g++ kernel.o svm.o metric.o test.o -o test
 	cp test ../test
 
-kernel.o: kernel.h kernel.cpp
+kernel.o: basekernel.h kernel.h kernel.cpp
 	g++ -c kernel.cpp
 
 svm.o : svm.h svm.cpp

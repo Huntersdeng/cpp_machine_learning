@@ -1,15 +1,14 @@
 #include <Eigen/Core>
+#include <memory>
+#include <vector>
+
+#include "basekernel.h"
 
 using Eigen::VectorXf;
 using Eigen::MatrixXf;
 
-class BaseKernel {
-public:
-    BaseKernel() {}
-    virtual float operator() (const VectorXf &x1, const VectorXf& x2) = 0;
-    virtual VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) = 0;
-    virtual ~BaseKernel() { }
-};
+using std::shared_ptr;
+using std::vector;
 
 class LinearKernel: public BaseKernel {
 public:
@@ -17,6 +16,13 @@ public:
         return x1.transpose() * x2;
     }
     VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
+};
+
+class LinearKernelFactory: public KernelFactory {
+public:
+    LinearKernelFactory() {}
+    LinearKernelFactory(vector<float> param) : KernelFactory(param) {}
+    virtual shared_ptr<BaseKernel> create();
 };
 
 class PolyKernel: public BaseKernel {
@@ -31,14 +37,28 @@ private:
     int d;
 };
 
+class PolyKernelFactory: public KernelFactory {
+public:
+    PolyKernelFactory() {}
+    PolyKernelFactory(vector<float> param) : KernelFactory(param) {}
+    virtual shared_ptr<BaseKernel> create();
+};
+
 class RBFKernel: public BaseKernel {
 public:
     RBFKernel() : sigma(1.0) {}
-    RBFKernel(float _sigma) : sigma(_sigma) {}
+    RBFKernel(float _sigma) : sigma(_sigma) { assert(_sigma > 0); }
     float operator() (const VectorXf &x1, const VectorXf& x2) override;
     VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
 private:
     float sigma;
+};
+
+class RBFKernelFactory: public KernelFactory {
+public:
+    RBFKernelFactory() {}
+    RBFKernelFactory(vector<float> param) : KernelFactory(param) {}
+    virtual shared_ptr<BaseKernel> create();
 };
 
 class LaplaceKernel: public BaseKernel {
@@ -49,6 +69,13 @@ public:
     VectorXf operator() (const MatrixXf &x1, const VectorXf& x2) override;
 private:
     float sigma;
+};
+
+class LaplaceKernelFactory: public KernelFactory {
+public:
+    LaplaceKernelFactory() {}
+    LaplaceKernelFactory(vector<float> param) : KernelFactory(param) {}
+    virtual shared_ptr<BaseKernel> create();
 };
 
 class SigmoidKernel: public BaseKernel {
@@ -63,4 +90,11 @@ public:
 private:
     float beta;
     float theta;
+};
+
+class SigmoidKernelFactory: public KernelFactory {
+public:
+    SigmoidKernelFactory() {}
+    SigmoidKernelFactory(vector<float> param) : KernelFactory(param) {}
+    virtual shared_ptr<BaseKernel> create();
 };

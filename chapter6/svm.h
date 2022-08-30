@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <Eigen/Core>
-#include "kernel.h"
+#include "basekernel.h"
 
 using std::vector;
 using std::pair;
@@ -24,8 +24,9 @@ private:
     shared_ptr<BaseKernel> kernel;
     float _predict(const MatrixXf&, const VectorXf&, const VectorXf&);
 public:
-    SVM() : C(1.0), kernel(std::make_shared<LinearKernel>()) {}
-    SVM(float _c, const string &_kernel, float params[2]);
+    SVM() : C(1.0) {}
+    SVM(float _c, shared_ptr<KernelFactory> factory) : b(0), C(_c), 
+                                                            kernel(factory->create()) { }
     void solve(const MatrixXf&, const VectorXf&, int);
     float predict(const VectorXf&);
     VectorXf predict(const MatrixXf &);

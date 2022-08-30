@@ -9,8 +9,10 @@
 #include "../chapter2/metric.h"
 #include "../utils/dataset.h"
 #include "svm.h"
+#include "kernel.h"
 
 using std::vector;
+using std::string;
 using Eigen::MatrixXf;
 using Eigen::Matrix2i;
 using Eigen::VectorXf;
@@ -18,11 +20,46 @@ using Eigen::VectorXf;
 
 int main(int argc, char* argv[]) {
     string kernel_name;
-    if(argc >= 2) {
-        kernel_name = argv[1];
+    std::cout << "Kernel (option: linear, poly, rbf, laplace, sigmoid) :\n";
+    std::cin >> kernel_name;
+    shared_ptr<KernelFactory> factory;
+    vector<float> param;
+    float p;
+    if (kernel_name == "linear") {
+        std::cout << "Using linear kernel\n";
+        factory = std::make_shared<LinearKernelFactory>(param);
+    } else if(kernel_name == "poly") {
+        std::cout << "Using poly kernel\n";
+        std::cout << "d >= 1:";
+        std::cin >> p;
+        param.push_back(p);
+        factory = std::make_shared<PolyKernelFactory>(param);
+    } else if(kernel_name == "rbf") {
+        std::cout << "Using rbf kernel\n";
+        std::cout << "sigma > 0:";
+        std::cin >> p;
+        param.push_back(p);
+        factory = std::make_shared<RBFKernelFactory>(param);
+    } else if(kernel_name == "laplace") {
+        std::cout << "Using laplace kernel\n";
+        std::cout << "sigma > 0:";
+        std::cin >> p;
+        param.push_back(p);
+        factory = std::make_shared<LaplaceKernelFactory>(param);
+    } else if(kernel_name == "sigmoid") {
+        std::cout << "Using sigmoid kernel\n";
+        std::cout << "beta > 0:";
+        std::cin >> p;
+        param.push_back(p);
+        std::cout << "theta < 0:";
+        std::cin >> p;
+        param.push_back(p);
+        factory = std::make_shared<SigmoidKernelFactory>(param);
+    } else {
+        std::cout << "Using linear kernel\n";
+        factory = std::make_shared<LinearKernelFactory>(param);
     }
-    
-    float params[2] = {2.0, 0.0};
+
 
     MatrixXf X_train, X_test;
     VectorXf y_train, y_test;
@@ -50,7 +87,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    SVM svm(2.0, kernel_name, params);
+    SVM svm(2.0, factory);
     svm.solve(X_train, y_train, 40);
     // std::cout << "alphas: " << svm.get_alphas().transpose() << std::endl;
     VectorXf pred = svm.predict(X_test);

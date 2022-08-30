@@ -2,9 +2,12 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <vector>
 
 using Eigen::VectorXf;
 using Eigen::MatrixXf;
+
+using std::vector;
 
 VectorXf LinearKernel::operator() (const MatrixXf &x1, const VectorXf& x2) {
     return x1 * x2;
@@ -57,4 +60,28 @@ float LaplaceKernel::operator() (const VectorXf &x1, const VectorXf& x2) {
 float SigmoidKernel::operator() (const VectorXf &x1, const VectorXf& x2) {
     float linear = x1.transpose() * x2;
     return tanh(beta * linear + theta);
+}
+
+shared_ptr<BaseKernel> LinearKernelFactory::create() {
+    return std::make_shared<LinearKernel>();
+}
+
+shared_ptr<BaseKernel> PolyKernelFactory::create() {
+    int d = (int)param[0];
+    return std::make_shared<PolyKernel>(d);
+}
+
+shared_ptr<BaseKernel> RBFKernelFactory::create() {
+    float sigma = param[0];
+    return std::make_shared<RBFKernel>(sigma);
+}
+
+shared_ptr<BaseKernel> LaplaceKernelFactory::create() {
+    float sigma = param[0];
+    return std::make_shared<LaplaceKernel>(sigma);
+}
+
+shared_ptr<BaseKernel> SigmoidKernelFactory::create() {
+    float beta = param[0], theta = param[1];
+    return std::make_shared<SigmoidKernel>(beta, theta);
 }

@@ -1,12 +1,14 @@
-test: metric.o test.o
-	g++ metric.o test.o -o test
-	cp test ../test
+.PHONY: clean
 
-metric.o : 
-	g++ -c ../chapter2/metric.cpp
+OBJ = $(patsubst %.cpp,%.o,$(wildcard *.cpp ../chapter2/*.cpp))
+target = test
 
-test.o : lvq.h kmeans.h test.cpp
-	g++ -c test.cpp
+$(target): $(OBJ)
+	g++ $(OBJ) -o $(target)
+	cp $(target) ../$(target)
+
+%.o : %.cpp
+	g++ -c $^ -o $@
 
 clean: 
-	rm -f metric.o test.o test ../test
+	rm -f $(OBJ) $(target) ../$(target)

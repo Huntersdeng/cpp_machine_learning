@@ -10,6 +10,7 @@
 #include "../chapter2/metric.h"
 #include "kmeans.h"
 #include "lvq.h"
+#include "gauss_mixture.h"
 
 using std::vector;
 using Eigen::MatrixXf;
@@ -38,13 +39,18 @@ int main(int argc, char* argv[]) {
     } 
 
     /* 1. KMeans */
-    // KMeans km(2);
-    // km.solve(X, pred);
+    KMeans km(2);
+    km.solve(X, pred);
 
     /* 2. LVQ */
-    LVQ lvq;
-    lvq.solve(X, y, 0.01, 10000);
-    pred = lvq.predict(X);
+    // LVQ lvq;
+    // lvq.solve(X, y, 0.01, 10000);
+    // pred = lvq.predict(X);
+
+    /* 3. gaussian mixture */
+    // GaussianMixture gm(2);
+    // gm.solve(X, 10);
+    // pred = gm.predict(X);
 
     /* Result */
     Matrix2i mat;
@@ -53,5 +59,4 @@ int main(int argc, char* argv[]) {
     std::cout << "Predictions: " << pred.transpose() << std::endl;
     std::cout << "JC: " << Metric::jaccard_coefficient(pred, y) << std::endl;
     std::cout << "FMI: " << Metric::fmi(pred, y) << std::endl;
-    
 }

@@ -4,7 +4,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-using std::vector;
 using Eigen::MatrixXf;
 using Eigen::VectorXf;
 

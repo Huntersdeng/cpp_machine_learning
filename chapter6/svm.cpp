@@ -44,7 +44,7 @@ int select_j(int i, int m) {
 //     std::cout << "w:\n" << w.transpose() << std::endl;
 // }
 
-void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
+void SVM::fit(const MatrixXf &dataset, const VectorXf &labels) {
     /*  
     简化版SMO算法实现，未使用启发式方法对alpha对进行选择.
     :param dataset: 所有特征数据向量
@@ -65,7 +65,7 @@ void SVM::solve(const MatrixXf &dataset, const VectorXf &labels, int max_iter) {
     int iter = 0;
     
     /* 2. 循环更新alphas与w，b */
-    while(iter < max_iter) {
+    while(iter < max_step) {
         int j = 0;
         int pair_changed = 0;
         for(int i=0; i<m; ++i) {

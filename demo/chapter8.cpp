@@ -8,7 +8,9 @@
 
 #include "../utils/dataset.h"
 #include "../chapter2/metric.h"
-#include "bayescls.h"
+#include "kmeans.h"
+#include "lvq.h"
+#include "gauss_mixture.h"
 
 using std::vector;
 using Eigen::MatrixXf;
@@ -24,32 +26,37 @@ int main(int argc, char* argv[]) {
     vector<vector<float>> X_data;
     vector<int> y_data;
     read_csv2vector(file_path, X_data, y_data);
-    // for(vector<float> &x: X_data) {
-    //     x.pop_back();
-    //     x.pop_back();
-    // }
     int m = X_data.size();
     int d = X_data[0].size();
 
-    NaiveBayes nb;
-    nb.solve(X_data, y_data);
-    vector<int> prediction = nb.predict(X_data);
+    MatrixXf X(m, 2);
     VectorXf pred(m, 1), y(m, 1);
+
     for(int i=0; i<m; ++i) {
-        pred(i, 0) = prediction[i];
+        X(i, 0) = X_data[i][6];
+        X(i, 1) = X_data[i][7];
         y(i, 0) = y_data[i];
     } 
+
+    /* 1. KMeans */
+    KMeans km(2);
+    km.solve(X, pred);
+
+    /* 2. LVQ */
+    // LVQ lvq;
+    // lvq.solve(X, y, 0.01, 10000);
+    // pred = lvq.predict(X);
+
+    /* 3. gaussian mixture */
+    // GaussianMixture gm(2);
+    // gm.solve(X, 10);
+    // pred = gm.predict(X);
 
     /* Result */
     Matrix2i mat;
     Metric::confusion_matrix(pred, y, mat);
     std::cout << "labels:      " << y.transpose() << std::endl;
     std::cout << "Predictions: " << pred.transpose() << std::endl;
-    std::cout << "MSE: " << Metric::mse(pred, y) << std::endl;
-    std::cout << "Accuracy: " << Metric::accuracy(pred, y) << std::endl;
-    std::cout << "Error_rate: " << Metric::error_rate(pred, y) << std::endl;
-    std::cout << "Confusion matrix:\n" << mat << std::endl;
-    std::cout << "Precision: " << Metric::precision(pred, y) << std::endl;
-    std::cout << "Recall: " << Metric::recall(pred, y) << std::endl;
-    std::cout << "F1_score: " << Metric::f1_score(pred, y) << std::endl;
+    std::cout << "JC: " << Metric::jaccard_coefficient(pred, y) << std::endl;
+    std::cout << "FMI: " << Metric::fmi(pred, y) << std::endl;
 }

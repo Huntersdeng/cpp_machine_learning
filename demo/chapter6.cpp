@@ -8,8 +8,9 @@
 
 #include "../chapter2/metric.h"
 #include "../utils/dataset.h"
-#include "svm.h"
-#include "kernel.h"
+#include "../chapter6/svm.h"
+#include "../ml.h"
+#include "../chapter6/kernel.h"
 
 using std::vector;
 using std::string;
@@ -86,11 +87,10 @@ int main(int argc, char* argv[]) {
             y_test(i,0) = -1;
         }
     }
-
-    SVM svm(2.0, factory);
-    svm.solve(X_train, y_train, 40);
+    Classifier* model = new SVM(2.0, 40, factory);
+    model->fit(X_train, y_train);
     // std::cout << "alphas: " << svm.get_alphas().transpose() << std::endl;
-    VectorXf pred = svm.predict(X_test);
+    VectorXf pred = model->predict(X_test);
     for(int i=0; i<m_test; ++i) {
         if(pred(i,0) >= 0.0) {
             pred(i,0) = 1.0;
@@ -111,4 +111,5 @@ int main(int argc, char* argv[]) {
     std::cout << "Precision: " << Metric::precision(pred, y_test) << std::endl;
     std::cout << "Recall: " << Metric::recall(pred, y_test) << std::endl;
     std::cout << "F1_score: " << Metric::f1_score(pred, y_test) << std::endl;
+    delete model;
 }

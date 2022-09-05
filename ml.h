@@ -13,4 +13,11 @@ public:
     virtual ~Classifier() {}
 };
 
+class Cluster{
+public:
+    virtual void fit(const MatrixXf &X)=0;
+    virtual VectorXf predict(const MatrixXf &X)=0;
+    virtual ~Cluster() {}
+};
+
 #endif

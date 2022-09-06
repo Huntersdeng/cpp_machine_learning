@@ -13,7 +13,7 @@ using Eigen::VectorXf;
 using Eigen::VectorXi;
 using Eigen::RowVectorXf;
 
-void LVQ::solve(const MatrixXf &X, const VectorXf &y, float lr, int max_iter) {
+void LVQ::fit(const MatrixXf &X, const VectorXf &y) {
     /* 1. 初始化原型向量P */
     map<int, vector<int>> T;
     for(int i=0; i<y.rows(); ++i) {
@@ -31,7 +31,7 @@ void LVQ::solve(const MatrixXf &X, const VectorXf &y, float lr, int max_iter) {
     std::uniform_int_distribution<int> u(0, m-1);
 
     int iter = 0;
-    while(iter < max_iter) {
+    while(iter < max_step) {
         int j = u(e);
         int i_star = -1;
         float min_dist = FLT_MAX;

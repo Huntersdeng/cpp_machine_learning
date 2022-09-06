@@ -8,15 +8,15 @@ using Eigen::MatrixXf;
 using Eigen::VectorXf;
 using Eigen::RowVectorXf;
 
-void KMeans::solve(const MatrixXf &X, VectorXf &pred) {    
-    int m = X.rows();
+void KMeans::fit(const MatrixXf &X) {    
+    int m = X.rows(), d = X.cols();
     /* 1. 随机选择数据集中k个向量作为起始簇中心 */
-    MatrixXf means(k, X.cols());
+    means.resize(k, d);
     srand(unsigned(time(NULL)));
-    vector<int> randomVec;
+    vector<int> randomVec(m, 0);
     for(int i = 0; i < m; ++i)
     {
-        randomVec.push_back(i);
+        randomVec[i] = i;
     }
     std::random_shuffle(randomVec.begin(), randomVec.end());
 
@@ -25,6 +25,7 @@ void KMeans::solve(const MatrixXf &X, VectorXf &pred) {
     }
     
     /* 2. 迭代 */
+    vector<vector<int>> clusters(k);
     bool flag = true;
     while(flag) {
         for(int i=0; i<k; ++i) {
@@ -55,9 +56,22 @@ void KMeans::solve(const MatrixXf &X, VectorXf &pred) {
             }
         }
     }
-    for(int i=0; i<k; ++i) {
-        for(int j : clusters[i]) {
-            pred(j) = i;
+}
+
+VectorXf KMeans::predict(const MatrixXf &X) {
+    int m = X.rows();
+    VectorXf pred(m);
+    for(int j=0; j<m; ++j) {
+        float min_dist = FLT_MAX;
+        int cluster_idx = -1;
+        for(int i=0; i<k; ++i) {
+            float dist = (X.row(j) - means.row(i)).norm();
+            if(dist < min_dist) {
+                min_dist = dist;
+                cluster_idx = i;
+            }
         }
+        pred(j) = cluster_idx;
     }
+    return pred;
 }

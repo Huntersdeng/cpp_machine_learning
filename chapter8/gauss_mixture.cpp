@@ -29,17 +29,17 @@ void GaussianMixture::init(int cols) {
     }
 }
 
-void GaussianMixture::solve(const MatrixXf& X, int max_iter) {
+void GaussianMixture::fit(const MatrixXf& X) {
     int m = X.rows(), n = X.cols();
     init(n);
-    std::cout << "means:\n" << means << std::endl;
-    std::cout << "variances:\n";
-    for(int i=0; i<n; ++i){
-        std::cout << i << "\n" << variances[i] << std::endl;
-    }
+    // std::cout << "means:\n" << means << std::endl;
+    // std::cout << "variances:\n";
+    // for(int i=0; i<n; ++i){
+    //     std::cout << i << "\n" << variances[i] << std::endl;
+    // }
     int iter = 0;
     MatrixXf gamma(m, k);
-    while(iter < max_iter) {
+    while(iter < max_step) {
         for(int j=0; j<m; ++j) {
             float norm = 0.0;
             for(int i=0; i<k; ++i) {
@@ -50,7 +50,7 @@ void GaussianMixture::solve(const MatrixXf& X, int max_iter) {
                 gamma(j, i) /= norm;
             }
         }
-        std::cout << gamma << std::endl;
+        // std::cout << gamma << std::endl;
         for(int i=0; i<k; ++i) {
             float norm = gamma.col(i).sum();
             means.row(i) = gamma.col(i).transpose() * X / norm;
@@ -62,25 +62,13 @@ void GaussianMixture::solve(const MatrixXf& X, int max_iter) {
             alphas[i] = norm / m;
             betas[i] = variances[i].inverse();
         }
-        std::cout << "means:\n" << means << std::endl;
-        std::cout << "variances:\n";
-        for(int i=0; i<n; ++i){
-            std::cout << i << "\n" << variances[i] << std::endl;
-        }
+        // std::cout << "means:\n" << means << std::endl;
+        // std::cout << "variances:\n";
+        // for(int i=0; i<n; ++i){
+        //     std::cout << i << "\n" << variances[i] << std::endl;
+        // }
         ++iter;
     }
-    // cluster.reserve(m);
-    // for(int j = 0; j < m; ++j) {
-    //     int idx = -1;
-    //     float max_prob = 0;
-    //     for(int i=0; i<k; ++i) {
-    //         if(max_prob < gamma(j, i)) {
-    //             max_prob = gamma(j, i);
-    //             idx = i;
-    //         }
-    //     }
-    //     cluster.push_back(idx);
-    // }
 }
 
 VectorXf GaussianMixture::predict(const MatrixXf &X) {
